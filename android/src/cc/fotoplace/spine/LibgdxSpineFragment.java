@@ -1,8 +1,7 @@
 package cc.fotoplace.spine;
 
-import android.annotation.TargetApi;
+import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -10,16 +9,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.view.ViewTreeObserver;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
@@ -27,16 +26,18 @@ import com.badoo.mobile.util.WeakHandler;
 
 import cc.fotoplace.R;
 import cc.fotoplace.base.InterceptableViewGroup;
+import permissions.dispatcher.NeedsPermission;
 
 
 /**
  * Created by QJoy on 2017.12.25.
  */
-@SuppressWarnings("All")
+
+
 public class LibgdxSpineFragment extends AndroidFragmentApplication implements InputProcessor {
 
-	public static boolean openDEBUGLog = false;
     private static final String TAG = LibgdxSpineFragment.class.getSimpleName();
+    public static boolean openDEBUGLog = false;
     private View m_viewRooter = null;
     //粒子效果UI容器层
     private InterceptableViewGroup mContainer;
@@ -47,27 +48,28 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
     //Fragment 处于OnStop标志位
     private boolean m_isStoping = false;
     //Screen 是否需要重建播放
-    private boolean m_isNeedBuild =true;
+    private boolean m_isNeedBuild = true;
 
-	private boolean m_hasBuilt = false;
+    private boolean m_hasBuilt = false;
 
     private WeakHandler m_WeakHandler = new WeakHandler();
 
-	public void setAction(String actionName){
-		if (spineEffectView != null)
-			spineEffectView.setAction(actionName);
-	}
 
-    public void preDestory(){
+    public void setAction(String actionName) {
+        if (spineEffectView != null)
+            spineEffectView.setAction(actionName);
+    }
 
-	    if (openDEBUGLog)
-	        Log.d(TAG, "preDestory");
+    public void preDestory() {
 
-	    if (!m_hasBuilt)
-		    return;
+        if (openDEBUGLog)
+            Log.d(TAG, "preDestory");
 
-	    spineEffectView.forceOver();
-	    spineEffectView.setCanDraw(false);
+        if (!m_hasBuilt)
+            return;
+
+        spineEffectView.forceOver();
+        spineEffectView.setCanDraw(false);
 
         m_isDestorying = true;
         m_isStoping = true;
@@ -77,95 +79,105 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-	    if (openDEBUGLog)
-	        Log.d(TAG, "onCreateView");
+        if (openDEBUGLog)
+            Log.d(TAG, "onCreateView");
 
         m_viewRooter = inflater.inflate(R.layout.lf_layout_giftparticle, null);
         return m_viewRooter;
     }
 
-	@Override
-	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
-		if (openDEBUGLog)
-			Log.d(TAG, "onViewCreated");
+        if (openDEBUGLog)
+            Log.d(TAG, "onViewCreated");
 
-		super.onViewCreated(view, savedInstanceState);
-		buildGDX();
-	}
+        super.onViewCreated(view, savedInstanceState);
+        buildGDX();
+    }
 
-    public void buildGDX(){
+    public void buildGDX() {
 
-	    if (openDEBUGLog)
-	        Log.d(TAG, "buildGDX");
-
-	    Toast.makeText(getContext(),"开始构建",Toast.LENGTH_SHORT);
-        spineEffectView = new LibgdxSpineEffectView();
-        View effectview = CreateGLAlpha(spineEffectView);
+        if (openDEBUGLog)
+            Log.d(TAG, "buildGDX");
         mContainer = (InterceptableViewGroup) m_viewRooter.findViewById(R.id.container);
+        spineEffectView = new LibgdxSpineEffectView(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight());
+        View effectview = CreateGLAlpha(spineEffectView);
         mContainer.addView(effectview);
-	    mContainer.setIntercept(true);
-        Gdx.input.setInputProcessor(this);
+        Gdx.input.setInputProcessor(LibgdxSpineFragment.this);
         Gdx.input.setCatchBackKey(true);
-	    m_hasBuilt = true;
-        Toast.makeText(getContext(),"构建成功",Toast.LENGTH_SHORT);
+        mContainer.setIntercept(true);
+        m_hasBuilt = true;
+
+        mContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void onGlobalLayout() {
+                mContainer.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                spineEffectView.setHeight(mContainer.getMeasuredHeight());
+                spineEffectView.setWidth(mContainer.getMeasuredWidth());
+            }
+        });
+
+
     }
 
     @Override
     public void onStart() {
 
-	    if (openDEBUGLog)
+        if (openDEBUGLog)
             Log.d(TAG, "onStart");
 
         m_isStoping = false;
         super.onStart();
 
-	    if (spineEffectView != null)
-	        spineEffectView.setCanDraw(true);
+        if (spineEffectView != null)
+            spineEffectView.setCanDraw(true);
     }
 
     @Override
     public void onStop() {
 
-	    if (openDEBUGLog)
+        if (openDEBUGLog)
             Log.d(TAG, "onStop");
 
         m_isStoping = true;
-	    spineEffectView.setCanDraw(false);
+        spineEffectView.setCanDraw(false);
         super.onStop();
     }
 
     @Override
     public void onResume() {
 
-	    if (openDEBUGLog)
+        if (openDEBUGLog)
             Log.d(TAG, "onResume");
 
         super.onResume();
 
-	    if (spineEffectView != null) {
-		    spineEffectView.closeforceOver();
-	    }
+        if (spineEffectView != null) {
+            spineEffectView.closeforceOver();
+        }
     }
 
     @Override
     public void onPause() {
 
-	    if (openDEBUGLog)
+        if (openDEBUGLog)
             Log.d(TAG, "onPause");
 
-	    if (spineEffectView != null) {
-		    spineEffectView.forceOver();
-	    }
+        if (spineEffectView != null) {
+            spineEffectView.forceOver();
+        }
 
-	    super.onPause();
+        super.onPause();
     }
 
     @Override
     public void onConfigurationChanged(Configuration config) {
 
-	    if (openDEBUGLog)
-		    Log.d(TAG, "onConfigurationChanged");
+        if (openDEBUGLog)
+            Log.d(TAG, "onConfigurationChanged");
 
         super.onConfigurationChanged(config);
 
@@ -173,11 +185,10 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
         buildGDX();
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private View CreateGLAlpha(ApplicationListener application) {
 
-	    if (openDEBUGLog)
-		    Log.d(TAG, "CreateGLAlpha");
+        if (openDEBUGLog)
+            Log.d(TAG, "CreateGLAlpha");
 
         //	    GLSurfaceView透明相关
         AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
@@ -190,10 +201,15 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
             glView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
             glView.setZOrderMediaOverlay(true);
             glView.setZOrderOnTop(true);
-
         }
 
+
         return view;
+    }
+
+    @NeedsPermission({Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void check() {
+
     }
 
     @Override
@@ -237,12 +253,12 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
         return false;
     }
 
-    private boolean isScreenLock(){
+    private boolean isScreenLock() {
         try {
             PowerManager pm = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
             boolean isScreenOn = pm.isScreenOn();//如果为true，则表示屏幕“亮”了，否则屏幕“暗”了。
             return !isScreenOn;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
