@@ -102,8 +102,8 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
             Log.d(TAG, "buildGDX");
         mContainer = (InterceptableViewGroup) m_viewRooter.findViewById(R.id.container);
         spineEffectView = new LibgdxSpineEffectView(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight());
-        View effectview = CreateGLAlpha(spineEffectView);
-        mContainer.addView(effectview);
+        View effectView = CreateGLAlpha(spineEffectView);
+        mContainer.addView(effectView);
         Gdx.input.setInputProcessor(LibgdxSpineFragment.this);
         Gdx.input.setCatchBackKey(true);
         mContainer.setIntercept(true);

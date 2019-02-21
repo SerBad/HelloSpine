@@ -1,8 +1,5 @@
 package cc.fotoplace.spine;
 
-import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.os.Environment;
 import android.util.Log;
 
 import com.badlogic.gdx.ApplicationListener;
@@ -10,7 +7,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.esotericsoftware.spine.AnimationState;
@@ -21,13 +17,6 @@ import com.esotericsoftware.spine.SkeletonData;
 import com.esotericsoftware.spine.SkeletonJson;
 import com.esotericsoftware.spine.SkeletonRenderer;
 import com.esotericsoftware.spine.SkeletonRendererDebug;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Calendar;
 
 /**
  * Created by QJoy on 2017.12.25.
@@ -128,25 +117,6 @@ public class LibgdxSpineEffectView implements ApplicationListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    //保存图片文件
-    public String saveToFile(String fileFolderStr, Bitmap croppedImage) throws FileNotFoundException, IOException {
-        File jpgFile = new File(fileFolderStr);
-        if (!jpgFile.getParentFile().exists()) { // 如果目录不存在，则创建一个名为"finger"的目录
-            mkdir(jpgFile.getParentFile());
-        }
-        FileOutputStream outputStream = new FileOutputStream(jpgFile); // 文件输出流
-        croppedImage.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-        outputStream.close();
-        return jpgFile.getPath();
-    }
-
-    public boolean mkdir(File file) {
-        while (!file.getParentFile().exists()) {
-            mkdir(file.getParentFile());
-        }
-        return file.mkdir();
     }
 
     @Override
@@ -260,27 +230,28 @@ public class LibgdxSpineEffectView implements ApplicationListener {
         renderer.draw(batch, skeleton); // Draw the skeleton images.
         batch.end();
 
-        if (time <= 2) {
-            time++;
-            try {
-                Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-                ByteBuffer pixels1 = pixmap.getPixels();
-
-                Gdx.gl.glReadPixels(0, 0, width, height, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixels1);
-
-                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-                bitmap.copyPixelsFromBuffer(pixels1);
-
-                Matrix matrix = new Matrix();
-                matrix.postScale(1, -1);
-
-                String name = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + Calendar.getInstance().getTimeInMillis() + ".jpeg";
-                saveToFile(name, Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        //在这里做截图，限制一下截图的次数
+//        if (time <= 2) {
+//            time++;
+//            try {
+//                Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+//                ByteBuffer pixels1 = pixmap.getPixels();
+//
+//                Gdx.gl.glReadPixels(0, 0, width, height, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixels1);
+//
+//                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//
+//                bitmap.copyPixelsFromBuffer(pixels1);
+//
+//                Matrix matrix = new Matrix();
+//                matrix.postScale(1, -1);
+//
+//                String name = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + Calendar.getInstance().getTimeInMillis() + ".jpeg";
+//                FileUtils.saveToFile(name, Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
 //		debugRenderer.draw(skeleton); // Draw debug lines.
 
