@@ -119,7 +119,7 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
 
         Gdx.input.setInputProcessor(LibgdxSpineFragment.this);
         Gdx.input.setCatchBackKey(true);
-        mContainer.setIntercept(true);
+        mContainer.setIntercept(false);
         m_hasBuilt = true;
 
         mContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -172,29 +172,29 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
             spineEffectView.closeforceOver();
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-            mContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-
-                @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-                @Override
-                public void onGlobalLayout() {
-                    mContainer.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-
-                    AlertDialog dialog = new AlertDialog.Builder(getContext())
-                            .create();
-                    View view = new View(getContext());
-                    view.setBackgroundColor(Color.RED);
-                    view.setLayoutParams(new ViewGroup.LayoutParams(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight()));
-                    dialog.setView(view);
-
-                    dialog.setMessage("假装挡一下");
-                    Window window = dialog.getWindow();
-                    window.setLayout(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight());
-                    dialog.show();
-                }
-            });
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//
+//            mContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//
+//                @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+//                @Override
+//                public void onGlobalLayout() {
+//                    mContainer.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//
+//                    AlertDialog dialog = new AlertDialog.Builder(getContext())
+//                            .create();
+//                    View view = new View(getContext());
+//                    view.setBackgroundColor(Color.RED);
+//                    view.setLayoutParams(new ViewGroup.LayoutParams(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight()));
+//                    dialog.setView(view);
+//
+//                    dialog.setMessage("假装挡一下");
+//                    Window window = dialog.getWindow();
+//                    window.setLayout(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight());
+//                    dialog.show();
+//                }
+//            });
+//        }
     }
 
     @Override

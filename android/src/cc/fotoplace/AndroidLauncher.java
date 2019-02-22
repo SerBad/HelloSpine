@@ -6,6 +6,7 @@ import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -103,6 +104,7 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
     }
 
     private void startOffScreen() {
+
         GLSurface glPufferSurface = new GLSurface(512, 512);
         TestRenderer glRenderer = new TestRenderer();
         glRenderer.addSurface(glPufferSurface);
@@ -119,7 +121,12 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
 
                 try {
                     FileUtils.saveToFile(name, bitmap);
-                    Toast.makeText(getApplicationContext(), "保存成功", Toast.LENGTH_SHORT).show();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "保存成功", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
