@@ -1,8 +1,10 @@
 package cc.fotoplace.spine;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
@@ -16,6 +18,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -103,7 +106,17 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
         mContainer = (InterceptableViewGroup) m_viewRooter.findViewById(R.id.container);
         spineEffectView = new LibgdxSpineEffectView(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight());
         View effectView = CreateGLAlpha(spineEffectView);
+
+//        effectView.setVisibility(View.INVISIBLE);
+//        ((GLSurfaceView) effectView).onResume();
+
         mContainer.addView(effectView);
+        View placeView = new View(getContext());
+        placeView.setBackgroundColor(Color.BLUE);
+
+        mContainer.addView(placeView);
+
+
         Gdx.input.setInputProcessor(LibgdxSpineFragment.this);
         Gdx.input.setCatchBackKey(true);
         mContainer.setIntercept(true);
@@ -158,6 +171,30 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
         if (spineEffectView != null) {
             spineEffectView.closeforceOver();
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            mContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+                @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+                @Override
+                public void onGlobalLayout() {
+                    mContainer.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                    AlertDialog dialog = new AlertDialog.Builder(getContext())
+                            .create();
+                    View view = new View(getContext());
+                    view.setBackgroundColor(Color.RED);
+                    view.setLayoutParams(new ViewGroup.LayoutParams(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight()));
+                    dialog.setView(view);
+
+                    dialog.setMessage("假装挡一下");
+                    Window window = dialog.getWindow();
+                    window.setLayout(mContainer.getMeasuredWidth(), mContainer.getMeasuredHeight());
+                    dialog.show();
+                }
+            });
+        }
     }
 
     @Override
@@ -201,6 +238,7 @@ public class LibgdxSpineFragment extends AndroidFragmentApplication implements I
             glView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
             glView.setZOrderMediaOverlay(true);
             glView.setZOrderOnTop(true);
+
         }
 
 
